@@ -20,9 +20,11 @@ app.get('/movie', function (req, res) {
 });
 
 app.get('/movies', function (req, res) {
+  movies = []
   fs.readdir('D:/FILMS', (err, files) => {
     files.forEach(file => {
-      getMovies((file.split('.').shift()));
+      movies.push(getMovies((file.split('.').shift())));
+      //movies.push(movie);
     });
   });
   movies = [{
@@ -53,7 +55,7 @@ function getMovies(searchText){
             } else {
 
             let movies = response.data.Search;
-            console.log(movies[0]);
+            //console.log(movies[0]);
             return movies[0];
         }
 
