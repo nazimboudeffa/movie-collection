@@ -12,7 +12,27 @@
 
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-    <script src="js/main.js"></script>
+    <script>
+    let output=``;
+    let movies= "<%-movies%>";
+    console.log(movies);
+    $.each(movies, (index, movie) => {
+        let image;
+        if (movie.Poster !== "N/A")
+            image = movie.Poster;
+        else
+            image = "https://thumb.ibb.co/kJgmxz/default_IMG.png";
+        output += `
+            <div class="col-md-3">
+                <div class="movieBox text-center">
+                    <a onclick="movieSelected('${movie.imdbID}')" href="#"><img src="${image}"> </a>
+                    <h5 class="movieTitle">${movie.Title}</h5>
+                </div>
+            </div>
+        `;
+    });
+    $('#movies').html(output);
+    </script>
 </head>
 <body>
 
@@ -24,23 +44,12 @@
             </div>
     </nav>
 
-    <div class="container">
-        <div class="jumbotron">
-            <h3 class="text-center">Search a Movie/TV Show</h3>
-            <form id="searchForm">
-                <input type="text" class="form-control" id="searchText" placeholder="Search a Movie/TV Show">
-            </form>
-        </div>
-    </div>
-
     <h3 id="headerDisplay" class="text-left">Click on a Movie/TV Show</h3>
 
     <div class="container">
         <div id="movies" class="row">
         </div>
     </div>
-
-
 
 </body>
 </html>
