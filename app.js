@@ -3,6 +3,8 @@ const ejs = require('ejs');
 
 const fs = require('fs');
 const axios = require('axios');
+const r = require('request');
+const async = require('async');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -20,13 +22,29 @@ app.get('/movie', function (req, res) {
 });
 
 app.get('/movies', function (req, res) {
-  movies = []
-  fs.readdir('D:/FILMS', (err, files) => {
-    files.forEach(file => {
-      movies.push(getMovies((file.split('.').shift())));
-      //movies.push(movie);
-    });
+  var titles = [];
+  var movies = [];
+  var folder = 'D:/FILMS'
+  var files = fs.readdirSync(folder);
+
+  files.forEach(file => {
+    let fileStat = fs.statSync(folder + '/' + file).isDirectory();
+    if(!fileStat) {
+      titles.push(file.split('.').shift());
+    }
   });
+
+  console.log(titles);
+
+  /*
+  async.forEachOf(titles, (title) => {
+    console.log(getMovies('Pulp Fiction'));
+  });
+  */
+
+  console.log(getMovies('Pulp Fiction'));
+
+  /*
   movies = [{
             Title: 'Pulp Fiction',
             Year: '1994',
@@ -41,28 +59,39 @@ app.get('/movies', function (req, res) {
             Type: 'movie',
             Poster: 'https://m.media-amazon.com/images/M/MV5BMjViOGU4ZjctMjQ1Mi00MzliLTk2ZDgtYWU3ZGZlMjNjNGMzXkEyXkFqcGdeQXVyMjQzMzQzODY@._V1_SX300.jpg'
           }]
+  */
   res.render('movies', {'movies' : movies});
 });
 
-function getMovies(searchText){
-    //Get and show data for all movies using omdbapi.com for a search query
-    let apiKey = 'thewdb';
-    let x = `http://www.omdbapi.com?s=${searchText}&apikey=${apiKey}`;
-    axios.get(`http://www.omdbapi.com?s=${searchText}&apikey=${apiKey}`)
-        .then((response) => {
-            if (response.data.Response == "False"){
-              console.log("N/A");
-            } else {
-
-            let movies = response.data.Search;
-            //console.log(movies[0]);
-            return movies[0];
+function getMoviesRequest(searchText){
+  //Get and show data for all movies using omdbapi.com for a search query
+  let apiKey = 'thewdb';
+  r(`http://www.omdbapi.com?s=${searchText}&apikey=${apiKey}`, function(error, response, body){
+  if(!error && response.statusCode == 200){
+        var parseData = JSON.parse(body);
+        return parseData;
         }
+    });
+}
 
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+function getMovies(searchText){
+  //Get and show data for all movies using omdbapi.com for a search query
+  let apiKey = 'thewdb';
+  let x = `http://www.omdbapi.com?s=${searchText}&apikey=${apiKey}`;
+  axios.get(`http://www.omdbapi.com?s=${searchText}&apikey=${apiKey}`)
+    .then((response) => {
+        if (response.data.Response == "False"){
+          console.log("N/A");
+        } else {
+
+        let search = response.data.Search;
+        //console.log(movies[0]);
+        return search[0];
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 }
 
 
