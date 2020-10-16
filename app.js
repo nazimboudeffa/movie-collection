@@ -11,7 +11,7 @@ app.set('view engine', 'ejs');
 
 app.use('/', express.static(__dirname + '/public'));
 
-let apiKey = process.env.APIKEY;
+//let apiKey = process.env.APIKEY;
 
 app.get('/', function (req, res) {
   res.render('index');
@@ -22,9 +22,11 @@ app.get('/movie', function (req, res) {
 });
 
 app.get('/movies', function (req, res) {
+  let apiKey = 'thewdb';
   var titles = [];
   var movies = [];
-  var folder = 'D:/FILMS'
+  var folder = 'D:/FILMS';
+
   var files = fs.readdirSync(folder);
 
   files.forEach(file => {
@@ -36,13 +38,25 @@ app.get('/movies', function (req, res) {
 
   console.log(titles);
 
-  /*
-  async.forEachOf(titles, (title) => {
-    console.log(getMovies('Pulp Fiction'));
+  titles.forEach(title => {
+    axios.get(`http://www.omdbapi.com?s=${title}&apikey=${apiKey}`)
+      .then((response) => {
+          if (response.data.Response == "False"){
+            console.log("N/A");
+          } else {
+            let search = response.data.Search;
+            //console.log(search[0]);
+            movies.push(search[0]);
+            console.log(movies);
+          }
+      })
+      .catch((err) => {
+          console.log(err);
+      })
+      .finally(()=>{res.render('movies', {'movies' : movies});})
   });
-  */
 
-  console.log(getMovies('Pulp Fiction'));
+  console.log(movies);
 
   /*
   movies = [{
@@ -60,7 +74,7 @@ app.get('/movies', function (req, res) {
             Poster: 'https://m.media-amazon.com/images/M/MV5BMjViOGU4ZjctMjQ1Mi00MzliLTk2ZDgtYWU3ZGZlMjNjNGMzXkEyXkFqcGdeQXVyMjQzMzQzODY@._V1_SX300.jpg'
           }]
   */
-  res.render('movies', {'movies' : movies});
+
 });
 
 function getMoviesRequest(searchText){
@@ -69,7 +83,7 @@ function getMoviesRequest(searchText){
   r(`http://www.omdbapi.com?s=${searchText}&apikey=${apiKey}`, function(error, response, body){
   if(!error && response.statusCode == 200){
         var parseData = JSON.parse(body);
-        return parseData;
+        console.log(parseData['Search'][0]);
         }
     });
 }
@@ -85,8 +99,7 @@ function getMovies(searchText){
         } else {
 
         let search = response.data.Search;
-        //console.log(movies[0]);
-        return search[0];
+        console.log(search[0]);
         }
     })
     .catch((err) => {
