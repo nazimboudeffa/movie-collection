@@ -3,7 +3,7 @@ const ejs = require('ejs');
 
 const fs = require('fs');
 const axios = require('axios');
-const r = require('request');
+const rp = require('request-promise');
 const async = require('async');
 
 const app = express();
@@ -26,7 +26,7 @@ app.get('/movies', function (req, res) {
   var titles = [];
   var movies = [];
   var folder = 'D:/FILMS';
-
+var ps = [];
   var files = fs.readdirSync(folder);
 
   files.forEach(file => {
@@ -39,6 +39,7 @@ app.get('/movies', function (req, res) {
   console.log(titles);
 
   titles.forEach(title => {
+/*
     axios.get(`http://www.omdbapi.com?s=${title}&apikey=${apiKey}`)
       .then((response) => {
           if (response.data.Response == "False"){
@@ -54,10 +55,28 @@ app.get('/movies', function (req, res) {
           console.log(err);
       })
       .finally(()=>{res.render('movies', {'movies' : movies});})
+*/
+    var options = {
+        uri: 'http://www.omdbapi.com',
+        qs: {
+            s: title,
+            apikey: apiKey
+        },
+        json: true
+    };
+
+
+    rp(options).then(body => {
+      if (!(body.Response == 'False')){
+        movies.push(body['Search'][0]);
+        console.log(body['Search'][0]);
+      }
+    });
+
   });
 
   console.log(movies);
-
+  
   /*
   movies = [{
             Title: 'Pulp Fiction',
@@ -74,7 +93,7 @@ app.get('/movies', function (req, res) {
             Poster: 'https://m.media-amazon.com/images/M/MV5BMjViOGU4ZjctMjQ1Mi00MzliLTk2ZDgtYWU3ZGZlMjNjNGMzXkEyXkFqcGdeQXVyMjQzMzQzODY@._V1_SX300.jpg'
           }]
   */
-
+  res.render('movies', {'movies' : movies});
 });
 
 function getMoviesRequest(searchText){
