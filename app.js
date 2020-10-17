@@ -37,45 +37,57 @@ app.get('/movies', function (req, res) {
   });
 
   console.log(titles);
-
-
-/*
-    axios.get(`http://www.omdbapi.com?s=${title}&apikey=${apiKey}`)
-      .then((response) => {
-          if (response.data.Response == "False"){
-            console.log("N/A");
-          } else {
-            let search = response.data.Search;
-            //console.log(search[0]);
-            movies.push(search[0]);
-            console.log(movies);
-          }
-      })
-      .catch((err) => {
-          console.log(err);
-      })
-      .finally(()=>{res.render('movies', {'movies' : movies});})
-*/
-
+  var ps = [];
   titles.forEach(title => {
-    var options = {
-        uri: 'http://www.omdbapi.com',
-        qs: {
-            s: title,
-            apikey: apiKey
-        },
-        json: true
-    };
-    rp(options).then(body => {
-      if (!(body.Response == 'False')){
-        movies.push(body['Search'][0]);
-        console.log(body['Search'][0]);
-      }
-    });
+    ps.push(axios.get(`http://www.omdbapi.com?s=${title}&apikey=${apiKey}`))
   });
+  Promise.all(ps).then((results)=>{
+    results.forEach(result => {
+      if (!(result.data['Search'] == undefined)){
+        movies.push(result.data['Search'][0]);
+        console.log(result.data['Search'][0]);
+      }
+    })
+  }).finally(()=>res.render('movies', {'movies' : movies}));
+  /*
+    titles.forEach(title => {
+      axios.get(`http://www.omdbapi.com?s=${title}&apikey=${apiKey}`)
+        .then((response) => {
+            if (response.data.Response == "False"){
+              console.log("N/A");
+            } else {
+              let search = response.data.Search;
+              //console.log(search[0]);
+              movies.push(search[0]);
+              console.log(movies);
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+    });
+  */
 
-  console.log(movies);
+  /*
+    titles.forEach(title => {
+      var options = {
+          uri: 'http://www.omdbapi.com',
+          qs: {
+              s: title,
+              apikey: apiKey
+          },
+          json: true
+      };
+      rp(options).then(body => {
+        if (!(body.Response == 'False')){
+          movies.push(body['Search'][0]);
+          console.log(body['Search'][0]);
+        }
+      });
+    });
 
+    console.log(movies);
+  */
   /*
   movies = [{
             Title: 'Pulp Fiction',
@@ -92,7 +104,6 @@ app.get('/movies', function (req, res) {
             Poster: 'https://m.media-amazon.com/images/M/MV5BMjViOGU4ZjctMjQ1Mi00MzliLTk2ZDgtYWU3ZGZlMjNjNGMzXkEyXkFqcGdeQXVyMjQzMzQzODY@._V1_SX300.jpg'
           }]
   */
-  res.render('movies', {'movies' : movies});
 });
 
 function getMoviesRequest(searchText){
