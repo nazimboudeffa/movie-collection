@@ -26,7 +26,7 @@ app.get('/movies', function (req, res) {
   var titles = [];
   var movies = [];
   var folder = 'D:/FILMS';
-var ps = [];
+
   var files = fs.readdirSync(folder);
 
   files.forEach(file => {
@@ -38,7 +38,7 @@ var ps = [];
 
   console.log(titles);
 
-  titles.forEach(title => {
+
 /*
     axios.get(`http://www.omdbapi.com?s=${title}&apikey=${apiKey}`)
       .then((response) => {
@@ -56,6 +56,8 @@ var ps = [];
       })
       .finally(()=>{res.render('movies', {'movies' : movies});})
 */
+
+  titles.forEach(title => {
     var options = {
         uri: 'http://www.omdbapi.com',
         qs: {
@@ -64,19 +66,16 @@ var ps = [];
         },
         json: true
     };
-
-
     rp(options).then(body => {
       if (!(body.Response == 'False')){
         movies.push(body['Search'][0]);
         console.log(body['Search'][0]);
       }
     });
-
   });
 
   console.log(movies);
-  
+
   /*
   movies = [{
             Title: 'Pulp Fiction',
